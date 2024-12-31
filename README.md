@@ -19,8 +19,8 @@ A custom OAuth2-like implementation for Odoo that allows secure API access manag
     - [Params](#params)
       - [Example Response](#example-response-1)
     - [Filter by date range](#filter-by-date-range)
-  - [Troubleshooting](#troubleshooting)
-  - [License](#license)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
 
 ## Features
 - OAuth2.0 authentication flow
@@ -235,12 +235,12 @@ Format: YYYY-MM-DD HH:mm:ss
 Timezone: UTC (Odoo's default)
 Common fields: create_date, write_date, but user can provide any accessible datetime field
 
-## Troubleshooting
+# Troubleshooting
 
 Common Issues:
    - If API Json requests doesn't requires to pass any body parameters though you have to provide empty dict to follow jsonrpc 2.0
 
-## License
+# License
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 
 This project is licensed under the GNU Lesser General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
