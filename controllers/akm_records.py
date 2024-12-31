@@ -34,8 +34,11 @@ class AkmRecordsController(http.Controller):
         if error := self._validate_client(client):
             return error
 
-        # Validate model access
-        model_name = kwargs.get("model_name")
+        # Get parameters from JSONRPC params
+        params = request.jsonrequest.get("params", {})
+        model_name = params.get("model_name")
+
+        print("model_name", model_name)
         if error := self._validate_model_access(client, model_name):
             return error
 
@@ -43,16 +46,16 @@ class AkmRecordsController(http.Controller):
         error, domain = self._validate_datetime_params(
             client,
             model_name,
-            kwargs.get("date_time_gte"),
-            kwargs.get("date_time_lte"),
-            kwargs.get("targetted_datetime_field"),
+            params.get("date_time_gte"),
+            params.get("date_time_lte"),
+            params.get("targetted_datetime_field"),
         )
         if error:
             return error
 
         # Handle pagination
-        page = int(kwargs.get("page", 1))
-        per_page = int(kwargs.get("per_page", 10))
+        page = int(params.get("page", 1))
+        per_page = int(params.get("per_page", 10))
         paginator = Pagination(page=page, per_page=per_page)
 
         try:

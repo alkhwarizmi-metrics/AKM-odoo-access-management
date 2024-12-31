@@ -48,9 +48,15 @@ pip install -r requirements.txt
 ```bash
 
 POST {{HOST}}/{{MODULE}}/v1/register
+
 {
-    "name": "My App",
-    "redirect_uri": "https://myapp.com/callback"
+    "jsonrpc": "2.0",
+    "method": "call",
+    "params": {
+        "name": "client name",
+        "redirect_uri": "https://myapp.com/callback"
+    },
+    "id": null
 }
 
 ```
@@ -82,10 +88,14 @@ Location: https://myapp.com/callback?code=temp_auth_code
 
 POST {{HOST}}/{{MODULE}}/v1/token
 {
-    "grant_type": "authorization_code",
-    "code": "temp_auth_code",
-    "client_id": "abc123",
-    "client_secret": "xyz789"
+    "jsonrpc": "2.0",
+    "method": "call",
+    "params": {
+      "grant_type": "authorization_code",
+      "code": "temp_auth_code",
+      "client_id": "abc123",
+      "client_secret": "xyz789"
+    }
 }
 
 ```
@@ -176,7 +186,7 @@ Retrieve records from a specified model using various filters and pagination.
 GET {{HOST}}/{{MODULE}}/v1/records
 ```
 
-### Query Parameters
+### Params
 - `model_name` (required): Name of the model (e.g., "res.partner")
 - `fields`: Comma-separated list of fields to return, or `"*"` for all
 - `page`, `per_page`: Pagination controls
@@ -188,17 +198,20 @@ GET {{HOST}}/{{MODULE}}/v1/records
 GET {{HOST}}/api/v1/records
 Authorization: Bearer YOUR_ACCESS_TOKEN
 Content-Type: application/json
-
 {
-    "model_name": "res.partner",
-    "fields": "name,email,phone",
-    "page": 1,
-    "per_page": 10,
-    "date_time_gte": "2024-01-01 00:00:00",
-    "date_time_lte": "2024-01-31 23:59:59",
-    "targetted_datetime_field": "create_date"
+    "jsonrpc": "2.0",
+    "method": "call",
+    "params": {
+        "model_name": "res.partner",
+        "fields": "name,email,phone",
+        "page": 1,
+        "per_page": 10,
+        "date_time_gte": "2024-01-01 00:00:00",
+        "date_time_lte": "2024-01-31 23:59:59",
+        "targetted_datetime_field": "create_date"
+    },
+    "id": null
 }
-
 ```
 
 
@@ -243,31 +256,6 @@ curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/data/read?model_name
 Format: YYYY-MM-DD HH:mm:ss
 Timezone: UTC (Odoo's default)
 Common fields: create_date, write_date, but user can provide any accessible datetime field
-
-```bash
-# Basic datetime range query
-curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/records" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model_name": "res.partner",
-    "date_time_gte": "2024-01-01 00:00:00",
-    "date_time_lte": "2024-01-31 23:59:59",
-    "targetted_datetime_field": "create_date"
-  }'
-
-# Query for last month's records
-curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/records" \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model_name": "res.partner",
-    "date_time_gte": "2023-12-01 00:00:00",
-    "date_time_lte": "2023-12-31 23:59:59",
-    "targetted_datetime_field": "write_date"
-  }'
-```
-
 
 ## Troubleshooting
 

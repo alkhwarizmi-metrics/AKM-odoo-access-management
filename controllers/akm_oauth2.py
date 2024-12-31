@@ -37,18 +37,12 @@ class AkmOAuth2Controller(http.Controller):
             - client_secret (str): The generated client secret.
             - redirect_uri (str): The redirect URI for the application.
         """
-        try:
-            # Parse JSON data from the request body
-            data = json.loads(request.httprequest.data.decode("utf-8"))
-        except json.JSONDecodeError:
-            return APIResponse.error(
-                message="Invalid JSON payload",
-                error_code="INVALID_JSON",
-                status_code=400,
-            )
 
-        name = data.get("name")
-        redirect_uri = data.get("redirect_uri")
+        # Get parameters from JSONRPC params
+        params = request.jsonrequest.get("params", {})
+
+        name = params.get("name")
+        redirect_uri = params.get("redirect_uri")
 
         # Basic validation
         if not name or not redirect_uri:
@@ -211,21 +205,13 @@ class AkmOAuth2Controller(http.Controller):
         - Requires valid client_id/client_secret
         - Returns JSON with access_token, refresh_token, etc.
         """
-        try:
-            # Parse JSON data from the request body
-            data = json.loads(request.httprequest.data.decode("utf-8"))
-        except json.JSONDecodeError:
-            return APIResponse.error(
-                message="Invalid JSON payload",
-                error_code="INVALID_JSON",
-                status_code=400,
-            )
+        params = request.jsonrequest.get("params", {})
 
-        client_id = data.get("client_id")
-        client_secret = data.get("client_secret")
-        grant_type = data.get("grant_type")
-        code = data.get("code")
-        scope = data.get("scope", "read")
+        client_id = params.get("client_id")
+        client_secret = params.get("client_secret")
+        grant_type = params.get("grant_type")
+        code = params.get("code")
+        scope = params.get("scope", "read")
 
         # Validate client credentials
         client = (
@@ -303,7 +289,7 @@ class AkmOAuth2Controller(http.Controller):
 
         # Handle refresh_token flow
         elif grant_type == "refresh_token":
-            refresh_token = data.get("refresh_token")
+            refresh_token = params.get("refresh_token")
             if not refresh_token:
                 return APIResponse.error(
                     message="Missing refresh_token",
