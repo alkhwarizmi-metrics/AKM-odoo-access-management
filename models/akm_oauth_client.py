@@ -14,14 +14,8 @@ class AkmOAuthClient(models.Model):
     client_secret = fields.Char(readonly=True, copy=False)
     redirect_uri = fields.Char(string="Redirect URI", required=True)
 
-    accessible_models = fields.Many2many(
-        "ir.model",
-        "akm_client_model_rel",
-        "client_id",
-        "model_id",
-        string="Accessible Models",
-        domain=[("transient", "=", False)],  # Exclude transient models
-        help="Models this client can access via API",
+    permission_ids = fields.One2many(
+        "akm.client.permission", "client_id", string="Model Permissions"
     )
 
     # One2many reverse references, take look into other models to understand
@@ -41,10 +35,6 @@ class AkmOAuthClient(models.Model):
         default="read",
     )
 
-    model_count = fields.Integer(
-        compute="_compute_model_count", string="Number of Accessible Models"
-    )
-
     is_active = fields.Boolean(string="Active", default=True)
 
     @api.model_create_multi
@@ -55,18 +45,42 @@ class AkmOAuthClient(models.Model):
             vals.setdefault("client_secret", secrets.token_urlsafe(32))
         return super().create(vals_list)
 
-    @api.depends("accessible_models")
-    def _compute_model_count(self):
-        for record in self:
-            record.model_count = len(record.accessible_models)
-
     def can_access_model(self, model_name):
-        """Check if client can access a specific model"""
+        """
+        Now search in 'akm.client.permission' to see if the client has permission for the given model_name.
+        """
         self.ensure_one()
-        return self.env["ir.model"].search(
-            [("model", "=", model_name), ("id", "in", self.accessible_models.ids)],
+        permission = self.env["akm.client.permission"].search(
+            [
+                ("client_id", "=", self.id),
+                ("model_id.model", "=", model_name),
+            ],
             limit=1,
         )
+        return bool(permission)
+
+    def can_access_field(self, model_name, field_name):
+        """
+        Extended check to validate if field-level permission is also granted.
+        """
+
+        if field_name in ["id", "create_date", "write_date"]:  # Add essential fields
+            return True
+
+        self.ensure_one()
+        permission = self.env["akm.client.permission"].search(
+            [
+                ("client_id", "=", self.id),
+                ("model_id.model", "=", model_name),
+            ],
+            limit=1,
+        )
+
+        if not permission:
+            return False
+        if not permission.field_ids:
+            return False
+        return field_name in permission.field_ids.mapped("name")
 
     @api.constrains("redirect_uri")
     def _check_redirect_uri(self):
@@ -78,19 +92,3 @@ class AkmOAuthClient(models.Model):
                 raise models.ValidationError(
                     "Redirect URI must be a valid HTTP/HTTPS URL"
                 )
-
-    @api.depends("client_secret")
-    def _compute_masked_client_secret(self):
-        for record in self:
-            if record.client_secret:
-                visible_chars = 4  # Number of characters to show
-                masked_length = len(record.client_secret) - visible_chars
-                if masked_length > 0:
-                    record.masked_client_secret = (
-                        record.client_secret[:visible_chars] + "*" * masked_length
-                    )
-                else:
-                    # If client_secret is shorter than or equal to visible_chars
-                    record.masked_client_secret = record.client_secret
-            else:
-                record.masked_client_secret = ""

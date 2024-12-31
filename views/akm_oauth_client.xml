@@ -10,15 +10,14 @@
                 <list string="AKM Oauth Client">
                     <field name="name"/>
                     <field name="client_id" string="Client ID"/>
-                    <!-- Hiding Client Secret to not reveal it easily -->
-                    <!-- <field name="client_secret"/> -->
+                    <!-- client_secret intentionally not shown here -->
                     <field name="redirect_uri" string="Redirect (Callback) URI"/>
                     <field name="scope" widget="badge" 
                         decoration-info="scope == 'read'" 
                         decoration-warning="scope == 'write'" 
                         decoration-danger="scope == 'admin'" 
                         />
-                    <field name="model_count"/>
+                    
                     <field name="is_active" widget="boolean_toggle"/>
                 </list>
             </field>
@@ -39,7 +38,7 @@
                         <group>
                             <group>
                                 <field name="client_id" string="Client ID"/>
-                                <!-- <field name="client_secret" /> -->
+                                <!-- client_secret intentionally not shown here -->
                                 <field name="redirect_uri"/>
                                 <field name="is_active" widget="boolean_toggle"/>
                             </group>
@@ -49,17 +48,24 @@
                                     decoration-warning="scope == 'write'" 
                                     decoration-danger="scope == 'admin'" 
                                     />
-                                <field name="model_count"/>
                             </group>
                         </group>
                         <notebook>
-                            <page string="Accessible Models" name="accessible_models">
-                                <field name="accessible_models">
+                           <!-- Updated page to handle model & field permissions -->
+                            <page string="Permissions" name="permissions">
+                                <field name="permission_ids" widget="one2many_list">
                                     <list>
-                                        <field name="name"/>
-                                        <field name="model"/>
-                                        <field name="state"/>
+                                        <field name="model_id" string="Model"/>
+                                        <field name="field_ids" widget="many2many_tags" string="Allowed Fields"/>
                                     </list>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <field name="model_id"/>
+                                                <field name="field_ids" widget="many2many_tags"/>
+                                            </group>
+                                        </sheet>
+                                    </form>
                                 </field>
                             </page>
 
