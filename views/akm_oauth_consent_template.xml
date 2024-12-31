@@ -1,0 +1,80 @@
+<odoo>
+    <template id="akm_oauth_consent_form" name="OAuth2 Consent">
+        <t t-call="web.layout">
+            <div class="min-vh-100 d-flex align-items-center justify-content-center py-5 bg-light">
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-md-8 col-lg-6">
+                            <!-- Main Card -->
+                            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                                <!-- Header -->
+                                <div class="card-header border-0 bg-primary text-white p-4">
+                                    <h2 class="h3 text-center fw-bold mb-0">
+                                        Application Authorization
+                                    </h2>
+                                </div>
+
+                                <!-- Body -->
+                                <div class="card-body p-4 p-lg-5">
+                                    <!-- App Details -->
+                                    <div class="app-details mb-4">
+                                        <label class="text-muted fs-6 mb-1">Application</label>
+                                        <h3 class="h4 fw-bold text-primary mb-0" t-esc="client.name"/>
+                                    </div>
+
+                                    <!-- Permissions -->
+                                    <div class="permissions mb-4">
+                                        <label class="text-muted fs-6 mb-1">Requested Permissions</label>
+                                        <div class="d-inline-block">
+                                            <span class="badge bg-primary px-3 py-2 fs-6" t-esc="scope"/>
+                                        </div>
+                                    </div>
+
+                                    <hr class="my-4 opacity-25"/>
+
+                                    <!-- Consent Message -->
+                                    <div class="text-center mb-4">
+                                        <p class="fs-5 mb-0">
+                                            Do you allow <strong class="text-primary" t-esc="client.name"/> 
+                                            to access your Odoo data?
+                                        </p>
+                                    </div>
+
+                                    <!-- Form -->
+                                    <form t-att-action="api_prefix + '/confirm'" method="post">
+                                        <input type="hidden" name="client_id" t-att-value="client.client_id"/>
+                                        <input type="hidden" name="scope" t-att-value="scope"/>
+                                        <input type="hidden" name="redirect_uri" t-att-value="redirect_uri"/>
+                                        <input type="hidden" name="state" t-att-value="state"/>
+                                        
+                                        <!-- Action Buttons -->
+                                        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                                            <button name="decision" value="deny" 
+                                                    class="btn btn-lg btn-outline-secondary px-4 py-2" 
+                                                    type="submit">
+                                                Deny Access
+                                            </button>
+                                            <button name="decision" value="allow" 
+                                                    class="btn btn-lg btn-primary px-4 py-2" 
+                                                    type="submit">
+                                                Allow Access
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+
+                                <!-- Footer -->
+                                <div class="card-footer border-0 bg-light p-4 text-center">
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <i class="fa fa-lock text-muted"></i>
+                                        <span class="text-muted">Secure OAuth2.0 Authentication</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>
