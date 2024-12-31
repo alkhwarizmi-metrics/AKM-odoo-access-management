@@ -13,7 +13,7 @@ class AkmOAuthAuthCode(models.Model):
     # Separation of concerns between authorization and token issuance
 
     code = fields.Char(readonly=True, copy=False)
-    client_id = fields.Many2one("akm.oauth.client", required=True)
+    client_id = fields.Many2one("akm.oauth.client", required=True, ondelete="cascade")
     user_name = fields.Char(string="User or System Name")
     expires_at = fields.Datetime()
     used = fields.Boolean(default=False, readonly=True)

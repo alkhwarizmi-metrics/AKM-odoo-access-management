@@ -14,7 +14,7 @@ class AkmOAuthToken(models.Model):
 
     access_token = fields.Char(readonly=True, copy=False)
     refresh_token = fields.Char(readonly=True, copy=False)
-    client_id = fields.Many2one("akm.oauth.client", required=True)
+    client_id = fields.Many2one("akm.oauth.client", required=True, ondelete="cascade")
     user_name = fields.Char(string="User or System Name")
 
     # float field to store timestamp like 1735584083.268502

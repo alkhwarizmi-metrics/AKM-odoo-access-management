@@ -1,5 +1,5 @@
 # addons/{MODULE_NAME}/controllers/akm_oauth2_controllers.py
-from odoo import http, fields
+from odoo import http
 from odoo.http import request
 from ..config.response import APIResponse
 from ..config.constants import ACCESS_TOKEN_EXPIRY, API_PREFIX

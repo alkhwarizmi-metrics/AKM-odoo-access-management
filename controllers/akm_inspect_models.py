@@ -77,4 +77,4 @@ class AkmInspectAccessibleDataController(http.Controller):
                 }
             )
 
-        return APIResponse.success(data={"accessible_models": models_info})
+        return APIResponse.success(data=models_info)
