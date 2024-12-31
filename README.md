@@ -1,63 +1,47 @@
-# OAuth
+# Odoo OAuth2.0 
 
 A custom OAuth2-like implementation for Odoo that allows secure API access management.
 
+
+## Table of Contents
+- [Features](#features)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Access Control](#access-control)
+- [API Reference](#api-reference)
+- [Troubleshooting](#troubleshooting)
+- [License](#license)
+
 ## Features
-
-- OAuth2-like authentication flow
-- API access management
-- Model-level permissions
+- OAuth2.0 authentication flow
+- ModelField-level access control
 - Token lifecycle management
-- Secure credential handling
-- Standard Request & response schema
+- Model-specific permissions
+- Detailed API documentation
+- Easy integration
 
-## Required Models
+## Requirements
+- Odoo 16 or later
+- (Rest configure python and postgres according to Odoo requirements, and no sepcific installations required for this addon)
 
-### AkmOAuthClient
+## Installation
 
-Manages OAuth clients and their permissions.
+```bash
+# Clone the repository
+git clone git@github.com:alkhwarizmi-metrics/AKM-odoo-access-management.git
 
-```python
-class AkmOAuthClient(models.Model):
-    name = fields.Char()           # Application name
-    client_id = fields.Char()      # Public identifier
-    client_secret = fields.Char()  # Secret key
-    redirect_uri = fields.Char()   # Callback URL
-    scope = fields.Selection()     # read/write/admin access level
-```
-### AkmClientPermission
-Manages field-level permissions for each client-model combination.
+# Add to Odoo addons path
+cp -r AKM-odoo-access-management /path/to/odoo/addons/
 
-```python
-class AkmClientPermission(models.Model):
-    client_id = fields.Many2one()  # Reference to AkmOAuthClient
-    model_id = fields.Many2one()   # Reference to ir.model
-```
+# Install required Python packages
+pip install -r requirements.txt
 
-### AkmOAuthAuthCode
-
-Handles authorization codes for the OAuth flow.
-
-```python
-class AkmOAuthAuthCode(models.Model):
-    code = fields.Char()           # One-time authorization code
-    expires_at = fields.Datetime() # 5-minute expiration
-    used = fields.Boolean()        # Prevents replay attacks
-```
-
-### AkmOAuthToken
-
-Manages access tokens for API authentication.
-
-```python
-class AkmOAuthToken(models.Model):
-    access_token = fields.Char()   # API access credential
-    refresh_token = fields.Char()  # Token renewal credential
-    expires_at = fields.Datetime() # Token expiration
+# Install the module
+./odoo-bin -i alkhwarizmi_metrics_api
 ```
 
 
-## Authentication Flow
+## API reference
 
 1. Client Registration
 
@@ -126,55 +110,34 @@ POST {{HOST}}/{{MODULE}}/v1/token
 
 ```
 
+# Access Control
+By default we are not creating any Permissions for AuthClients, even clients are successfully registered and verified we have to set permissions for this particular client. 
 
-## Authentication Flow
+1. Go to settings
+2. Open "AKM Oauth2.0 Clients"
+3. Open the record that we want to update 
+4. Click "Add a line" in Permissions tab to further add models and fields
 
-- One-time authorization codes
-- Token expiration
-- Scope-based access control
-- Model-level permissions
-- Credential hashing
+Note: At any point if Odoo users want to revoke access of Auth Clients, they can just simple set `is_active` to `False` .
 
-
-# Setup
-
-1. Clone the repository:
-```
-git clone git@github.com:alkhwarizmi-metrics/AKM-odoo-access-management.git
-```
-
-2. Add to Odoo addons path:
-
-```
-cp -r AKM-odoo-access-management /path/to/odoo/addons/
-```
-
-3. Install the module:
-
-```
-./odoo-bin -i AKM-odoo-access-management
-```
 
 # Get Permissions & Reading the Records
 
-Below are new endpoints to inspect accessible models and read data.
-Check which models a client can access.
+Below are new endpoints to get permissions regarding models and read data. Check which models a client can access.
 
 ## Get Permissions
-
-### Endpoint
 
 ```bash
 GET {{HOST}}/{{MODULE}}/v1/permissions
 ```
 
-Example Request
+#### Example Request
 ```bash
 curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/permissions" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
-Example Response
+#### Example Response
 ```json
 {
   "jsonrpc": "2.0",
@@ -213,21 +176,40 @@ Retrieve records from a specified model using various filters and pagination.
 GET {{HOST}}/{{MODULE}}/v1/records
 ```
 
-## Query Parameters
+### Query Parameters
 - `model_name` (required): Name of the model (e.g., "res.partner")
 - `fields`: Comma-separated list of fields to return, or `"*"` for all
 - `page`, `per_page`: Pagination controls
 - `date_gte`, `date_lte`, `targetted_date_field`: Filter by dates
 - `date_time_gte`, `date_time_lte`, `targetted_datetime_field`: Filter by datetimes
 
-Example Request:
+
+```bash
+GET {{HOST}}/api/v1/records
+Authorization: Bearer YOUR_ACCESS_TOKEN
+Content-Type: application/json
+
+{
+    "model_name": "res.partner",
+    "fields": "name,email,phone",
+    "page": 1,
+    "per_page": 10,
+    "date_time_gte": "2024-01-01 00:00:00",
+    "date_time_lte": "2024-01-31 23:59:59",
+    "targetted_datetime_field": "create_date"
+}
+
+```
+
+
+#### Example Request:
 
 ```bash
 curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/data/read?model_name=res.partner&page=1&per_page=5" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
-## Example Response 
+#### Example Response 
 ```json
 
 {
@@ -257,7 +239,7 @@ curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/data/read?model_name
 
 ```
 
-## Filter by date range 
+### Filter by date range 
 Format: YYYY-MM-DD HH:mm:ss
 Timezone: UTC (Odoo's default)
 Common fields: create_date, write_date, but user can provide any accessible datetime field
@@ -286,5 +268,13 @@ curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/records" \
   }'
 ```
 
+
+## Troubleshooting
+
+Common Issues:
+   - If API Json requests doesn't requires to pass any body parameters though you have to provide empty dict to follow jsonrpc 2.0
+
 ## License
-<!-- Point to LICENSE -->
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+
+This project is licensed under the GNU Lesser General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
