@@ -10,7 +10,7 @@ from typing import List, Dict, Optional, Any, Tuple, Literal
 from ..config.response import APIResponse
 from ..config.pagination import Pagination
 from ..config.constants import API_PREFIX
-from ..config.decorators import require_authenticated_client
+from ..config.decorators import require_authenticated_client, log_request_decorator
 
 
 DomainOperator = Literal["=", ">=", "<="]
@@ -25,6 +25,7 @@ class AkmRecordsController(http.Controller):
     @http.route(
         f"{API_PREFIX}/records", type="json", auth="none", methods=["GET"], csrf=False
     )
+    @log_request_decorator
     @require_authenticated_client
     def get(self, **kwargs: Dict[str, Any]) -> JsonDict:
         """Read records from a given model with pagination and filters."""
@@ -35,11 +36,14 @@ class AkmRecordsController(http.Controller):
             return error
 
         # Get parameters from JSONRPC params
-        params = request.jsonrequest.get("params", {})
+        params = kwargs
+
+        # copy kwargs to self to use in log_request
+        self.kwargs = kwargs
         model_name = params.get("model_name")
 
-        print("model_name", model_name)
         if error := self._validate_model_access(client, model_name):
+
             return error
 
         # Validate datetime params and build domain
@@ -64,6 +68,7 @@ class AkmRecordsController(http.Controller):
             paginated_records = paginator.paginate(records)
         except Exception as e:
             _logger.error(f"Error reading data: {e}")
+
             return APIResponse.error(
                 message="Error fetching records",
                 error_code="READ_ERROR",
@@ -99,6 +104,7 @@ class AkmRecordsController(http.Controller):
     def _validate_client(self, client: Optional[Model]) -> Optional[JsonDict]:
         """Validate client and its scope."""
         if not client:
+
             return APIResponse.error(
                 message="Client not found",
                 error_code="INVALID_CLIENT",

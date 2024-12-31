@@ -23,6 +23,9 @@ class AkmOAuthClient(models.Model):
     authcode_ids = fields.One2many(
         "akm.oauth.authcode", "client_id", string="Authorization Codes"
     )
+    request_log_ids = fields.One2many(
+        "akm.request.log", "client_id", string="Request Logs"
+    )
 
     scope = fields.Selection(
         [

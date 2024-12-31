@@ -4,11 +4,23 @@ from odoo.http import request
 from ..config.response import APIResponse
 from ..config.constants import ACCESS_TOKEN_EXPIRY, API_PREFIX
 from ..config.utils import validate_http4_url
-import json
 import secrets
 
 
 class AkmOAuth2Controller(http.Controller):
+    """
+    OAuth2.0 Authentication Flow Controller
+
+    Implements a standard OAuth2.0 authorization flow with the following endpoints:
+    - /register: Client registration
+    - /authorize: User authorization
+    - /confirm: Consent confirmation
+    - /token: Token exchange and refresh
+
+    Security Features:
+    - CSRF protection via state parameter
+    - Client authentication
+    """
 
     @http.route(
         f"{API_PREFIX}/register",
@@ -19,27 +31,30 @@ class AkmOAuth2Controller(http.Controller):
     )
     def register_client(self, **kwargs):
         """
-        Register a new OAuth client.
+        Register OAuth2.0 Client Application
 
-        This endpoint allows an external application to register a new OAuth client
-        by providing the application name and redirect URI. The client_id and
-        client_secret are automatically generated and returned in the response.
+        Registers a new client application and generates secure credentials.
 
-        Expects:
-            JSON payload with:
-            - name (str): The name of the application.
-            - redirect_uri (str): The redirect URI for the application.
+        Request:
+            {
+                "name": "App Name",
+                "redirect_uri": "https://app.example.com/callback"
+            }
 
-        Returns:
-            JSON response with:
-            - name (str): The name of the application.
-            - client_id (str): The generated client ID.
-            - client_secret (str): The generated client secret.
-            - redirect_uri (str): The redirect URI for the application.
+        Response:
+            {
+                "client_id": "generated_id",
+                "client_secret": "generated_secret",
+                "name": "App Name",
+                "redirect_uri": "https://app.example.com/callback"
+            }
+
+        Errors:
+            - INVALID_REQUEST: Missing or invalid parameters
         """
 
         # Get parameters from JSONRPC params
-        params = request.jsonrequest.get("params", {})
+        params = kwargs
 
         name = params.get("name")
         redirect_uri = params.get("redirect_uri")
@@ -91,11 +106,21 @@ class AkmOAuth2Controller(http.Controller):
     @http.route(f"{API_PREFIX}/authorize", type="http", auth="user", website=True)
     def authorize(self, **kwargs):
         """
-        Step 1: User-facing consent screen
-        - Must be logged in (auth='user')
-        - Checks client_id validity
-        - Renders a QWeb template to allow/deny
+        Authorization Request Handler
+
+        Validates the authorization request and displays consent screen.
+
+        Parameters:
+            - client_id: Client application identifier
+            - response_type: Must be "code"
+            - scope: Requested permissions (default: "read")
+            - state: Anti-CSRF token
+
+        Returns:
+            - Renders consent screen on success
+            - Error message on validation failure
         """
+
         client_id = kwargs.get("client_id")
         response_type = kwargs.get("response_type", "code")
         scope = kwargs.get("scope", "read")
@@ -141,10 +166,22 @@ class AkmOAuth2Controller(http.Controller):
     )
     def confirm(self, **kwargs):
         """
-        Step 2: Confirming or denying user consent
-        - If user approves, generate an auth code
-        - If user denies, redirect with error
+        User Consent Handler
+
+        Processes user's consent decision and redirects with appropriate response.
+
+        Parameters:
+            - decision: "allow" or "deny"
+            - client_id: Client identifier
+            - state: Anti-CSRF token
+            - scope: Requested scope
+
+        Returns:
+            Redirects to client's redirect_uri with either:
+            - Success: ?code=auth_code&state=xyz
+            - Denial: ?error=access_denied&state=xyz
         """
+
         decision = kwargs.get("decision")
         client_id = kwargs.get("client_id")
         scope = kwargs.get("scope", "read")
@@ -184,28 +221,69 @@ class AkmOAuth2Controller(http.Controller):
                 headers={"Location": final_uri, "Cache-Control": "no-cache"},
                 status=302,
             )
-        else:
-            # Handle denial
-            separator = "&" if "?" in redirect_uri else "?"
-            final_uri = f"{redirect_uri}{separator}error=access_denied&state={state}"
+        elif decision == "deny":
+            try:
+                # Handle denial
+                separator = "&" if "?" in redirect_uri else "?"
+                final_uri = (
+                    f"{redirect_uri}{separator}error=access_denied&state={state}"
+                )
 
-            return request.make_response(
-                "",
-                headers={"Location": final_uri, "Cache-Control": "no-cache"},
-                status=302,
-            )
+                return request.make_response(
+                    "",
+                    headers={"Location": final_uri, "Cache-Control": "no-cache"},
+                    status=302,
+                )
+            except Exception as e:
+                # Log the exception
+                request.env.cr.commit()  # Commit the transaction if needed
+                return "Error processing denial."
+        else:
+            return "Invalid decision parameter."
 
     @http.route(
         f"{API_PREFIX}/token", type="json", auth="none", methods=["POST"], csrf=False
     )
     def token(self, **kwargs):
         """
-        Step 3: Exchange auth code for access token
-        - grant_type=authorization_code
-        - Requires valid client_id/client_secret
-        - Returns JSON with access_token, refresh_token, etc.
+        Token Exchange Handler
+
+        Supports authorization_code and refresh_token grant types.
+
+        Grant Types:
+            1. authorization_code:
+               Request:
+                   {
+                       "grant_type": "authorization_code",
+                       "client_id": "id",
+                       "client_secret": "secret",
+                       "code": "auth_code"
+                   }
+
+            2. refresh_token:
+               Request:
+                   {
+                       "grant_type": "refresh_token",
+                       "client_id": "id",
+                       "client_secret": "secret",
+                       "refresh_token": "token"
+                   }
+
+        Response:
+            {
+                "access_token": "new_token",
+                "refresh_token": "new_refresh_token",
+                "token_type": "Bearer",
+                "expires_in": 3600
+            }
+
+        Errors:
+            - INVALID_CLIENT: Invalid credentials
+            - INVALID_GRANT: Invalid/expired code or token
+            - UNSUPPORTED_GRANT_TYPE: Invalid grant_type
         """
-        params = request.jsonrequest.get("params", {})
+
+        params = kwargs
 
         client_id = params.get("client_id")
         client_secret = params.get("client_secret")

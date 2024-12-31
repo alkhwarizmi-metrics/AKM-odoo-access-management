@@ -3,3 +3,4 @@ access_akm_oauth_client,access.akm.oauth.client,model_akm_oauth_client,base.grou
 access_akm_oauth_authcode,access.akm.oauth.authcode,model_akm_oauth_authcode,base.group_system,1,1,1,1
 access_akm_oauth_token,access.akm.oauth.token,model_akm_oauth_token,base.group_system,1,1,1,1
 access_akm_client_permission,access.akm.client.permission,model_akm_client_permission,base.group_system,1,1,1,1
+access_akm_request_log,access.akm.request.log,model_akm_request_log,base.group_system,1,1,1,1

@@ -4,13 +4,23 @@ A custom OAuth2-like implementation for Odoo that allows secure API access manag
 
 
 ## Table of Contents
-- [Features](#features)
-- [Requirements](#requirements)
-- [Installation](#installation)
+- [Odoo OAuth2.0](#odoo-oauth20)
+  - [Table of Contents](#table-of-contents)
+  - [Features](#features)
+  - [Requirements](#requirements)
+  - [Installation](#installation)
+  - [API reference](#api-reference)
 - [Access Control](#access-control)
-- [API Reference](#api-reference)
-- [Troubleshooting](#troubleshooting)
-- [License](#license)
+- [Get Permissions \& Reading the Records](#get-permissions--reading-the-records)
+  - [Get Permissions](#get-permissions)
+      - [Example Request](#example-request)
+      - [Example Response](#example-response)
+  - [Reading the Records](#reading-the-records)
+    - [Params](#params)
+      - [Example Response](#example-response-1)
+    - [Filter by date range](#filter-by-date-range)
+  - [Troubleshooting](#troubleshooting)
+  - [License](#license)
 
 ## Features
 - OAuth2.0 authentication flow
@@ -25,6 +35,7 @@ A custom OAuth2-like implementation for Odoo that allows secure API access manag
 - (Rest configure python and postgres according to Odoo requirements, and no sepcific installations required for this addon)
 
 ## Installation
+
 
 ```bash
 # Clone the repository
@@ -43,80 +54,54 @@ pip install -r requirements.txt
 
 ## API reference
 
-1. Client Registration
+1. Register Client
 
 ```bash
 
-POST {{HOST}}/{{MODULE}}/v1/register
-
-{
-    "jsonrpc": "2.0",
-    "method": "call",
-    "params": {
-        "name": "client name",
-        "redirect_uri": "https://myapp.com/callback"
-    },
-    "id": null
-}
+curl -X POST "{{HOST}}/{{MODULE}}/v1/register" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "jsonrpc": "2.0",
+           "method": "call",
+           "params": {
+               "name": "MyApp",
+               "redirect_uri": "https://myapp.com/callback"
+           }
+         }'
 
 ```
 
 
-2. Authorization Request
+2. Authorize
 
 ```bash
 
 GET {{HOST}}/{{MODULE}}/v1/authorize
-?client_id=abc123
-&response_type=code
+    ?client_id=YOUR_CLIENT_ID
+    &response_type=code
+    &scope=read
+    &state=RANDOM_STATE
 
 ```
 
-3. Authorization Response
+- Intermediate Step: User sees consent screen and authorizes the requested scope
+
+3. Exchange Token
 
 ```bash
 
-HTTP/1.1 302 Found
-Location: https://myapp.com/callback?code=temp_auth_code
-
-```
-
-
-4. Token Request
-
-```bash
-
-POST {{HOST}}/{{MODULE}}/v1/token
-{
-    "jsonrpc": "2.0",
-    "method": "call",
-    "params": {
-      "grant_type": "authorization_code",
-      "code": "temp_auth_code",
-      "client_id": "abc123",
-      "client_secret": "xyz789"
-    }
-}
-
-```
-5. Token Response
-```json
-
-{
-    "jsonrpc": "2.0",
-    "id": null,
-    "result": {
-        "status": "success",
-        "status_code": 200,
-        "message": "Operation successful",
-        "data": {
-            "access_token": "eyJ0eX...",
-            "refresh_token": "eyJhbG...",
-            "token_type": "Bearer",
-            "expires_in": 3600
-        }
-    }
-}
+curl -X POST "{{HOST}}/{{MODULE}}/v1/token" \
+     -H "Content-Type: application/json" \
+     -d '{
+           "jsonrpc": "2.0",
+           "method": "call",
+           "params": {
+               "grant_type": "authorization_code",
+               "code": "AUTH_CODE",
+               "client_id": "CLIENT_ID",
+               "client_secret": "CLIENT_SECRET"
+           }
+         }'
 
 ```
 
@@ -128,8 +113,9 @@ By default we are not creating any Permissions for AuthClients, even clients are
 3. Open the record that we want to update 
 4. Click "Add a line" in Permissions tab to further add models and fields
 
-Note: At any point if Odoo users want to revoke access of Auth Clients, they can just simple set `is_active` to `False` .
-
+Note: 
+1. At any point if Odoo users want to revoke access of Auth Clients, they can just simple set `is_active` to `False` .
+2. `id`, `create_date`, `write_date` Fields are being considered as essential fields, you don't have to specifically add them in permissions handling
 
 # Get Permissions & Reading the Records
 
@@ -212,14 +198,6 @@ Content-Type: application/json
     },
     "id": null
 }
-```
-
-
-#### Example Request:
-
-```bash
-curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/data/read?model_name=res.partner&page=1&per_page=5" \
-     -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
 #### Example Response 

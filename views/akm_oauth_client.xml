@@ -2,7 +2,7 @@
 <!-- Odoo Version 18.0 -->
 <odoo>
     <data>
-        <!-- List View Definition for AKM System Users -->
+        <!-- List View Definition for AKM Auth Clients-->
         <record id="akm_oauth_client_list" model="ir.ui.view">
             <field name="name">akm.oauth.client.list</field>
             <field name="model">akm.oauth.client</field>
@@ -127,6 +127,35 @@
                                     </form>
                                 </field>
                             </page>
+
+                            <!-- Readonly Nested Page (Tab) for viewing request Logs -->
+                            <page name="request_logs" string="Request Logs">
+                                <field name="request_log_ids" readonly="1" widget="one2many_list">
+                                    <list create="false" edit="false" delete="false">
+                                        <field name="name"/>
+                                        <field name="method"/>
+                                        <field name="status_code"/>
+                                        <field name="duration"/>
+                                        <field name="create_date"/>
+                                    </list>
+                                    <form>
+                                        <sheet>
+                                            <group>
+                                                <field name="name" readonly="1"/>
+                                                <field name="endpoint" readonly="1"/>
+                                                <field name="method" readonly="1"/>
+                                                <field name="request_params" readonly="1"/>
+
+                                                <field name="status_code" readonly="1"/>
+                                                <field name="ip_address" readonly="1"/>
+                                                <field name="user_agent" readonly="1"/>
+                                                <field name="duration" readonly="1"/>
+                                                <field name="create_date" readonly="1"/>
+                                            </group>
+                                        </sheet>
+                                    </form>
+                                </field>
+                            </page>
                         </notebook>
                     </sheet>
                 </form>
@@ -142,10 +171,16 @@
 
         <!-- Menu -->
         <menuitem 
+            id="akm_oauth_main_menu" 
+            name="AKM Oauth2.0"
+            parent="base.menu_administration"
+            sequence="100"/>
+
+        <menuitem 
             id="akm_oauth_client_menu" 
             name="AKM Oauth2.0 Clients" 
-            parent="base.menu_administration"
+            parent="akm_oauth_main_menu"
             action="akm_oauth_client_action"
-            sequence="100"/>
+            sequence="101"/>
     </data>
 </odoo>

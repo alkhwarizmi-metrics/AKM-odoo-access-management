@@ -10,6 +10,7 @@
         "security/ir.model.access.csv",
         "views/akm_oauth_client.xml",
         "views/akm_oauth_consent_template.xml",
+        "views/akm_request_log.xml",
     ],
     "installable": True,
     "application": True,

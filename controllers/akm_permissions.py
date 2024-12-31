@@ -1,14 +1,24 @@
-from odoo import http, fields
+from odoo import http
 from odoo.http import request
 from ..config.response import APIResponse
 from ..config.constants import API_PREFIX
-from ..config.decorators import require_authenticated_client
-import logging
-
-_logger = logging.getLogger(__name__)
+from ..config.decorators import require_authenticated_client, log_request_decorator
 
 
 class AkmPermissionsController(http.Controller):
+    """
+    Permissions Management Controller for OAuth2.0 API Access
+
+    Provides endpoints to retrieve and validate client permissions for:
+    - Accessible Odoo models
+    - Permitted fields within models
+    - Access level details
+
+    Security Features:
+    - Requires valid OAuth2.0 token
+    - Field-level access control
+    - Model-level permissions
+    """
 
     @http.route(
         f"{API_PREFIX}/permissions",
@@ -17,13 +27,45 @@ class AkmPermissionsController(http.Controller):
         methods=["GET"],
         csrf=False,
     )
+    @log_request_decorator
     @require_authenticated_client
     def get_permissions(self, **kwargs):
         """
-        Retrieve List of accessible models and fields.
-        - Validates access token and retrieves client_id.
-        - Fetches accessible models and their fields.
-        - Returns model details in JSON format.
+        Retrieve Authorized Model Permissions
+
+        Returns detailed information about models and fields that the authenticated
+        client has permission to access.
+
+        Request:
+            Headers:
+                Authorization: Bearer <token>
+
+        Response:
+            {
+                "status": "success",
+                "data": [
+                    {
+                        "model_name": "res.partner",
+                        "model_description": "Contact",
+                        "fields": [
+                            {
+                                "name": "name",
+                                "type": "char",
+                                "required": true,
+                                "readonly": false,
+                                "string": "Name"
+                            },
+                            ...
+                        ]
+                    },
+                    ...
+                ]
+            }
+
+        Errors:
+            - INVALID_CLIENT (401): Client not found or invalid
+            - NO_ACCESSIBLE_MODELS (404): No permissions configured
+            - FIELD_FETCH_ERROR (500): Error retrieving field information
         """
 
         client = kwargs.get("client")
@@ -40,7 +82,11 @@ class AkmPermissionsController(http.Controller):
                 message=f"No model permissions found for client '{client.name}'",
                 error_code="NO_ACCESSIBLE_MODELS",
                 status_code=404,
-                details={"client_id": client.client_id, "scope": client.scope},
+                details={
+                    "client_id": client.client_id,
+                    "scope": client.scope,
+                    "help": "Contact administrator to configure model permissions",
+                },
             )
 
         models_info = []
@@ -66,6 +112,8 @@ class AkmPermissionsController(http.Controller):
                                 "required": field_attrs.get("required", False),
                                 "readonly": field_attrs.get("readonly", False),
                                 "string": field_attrs.get("string"),
+                                # "relation": field_attrs.get("relation"), # Uncomment if needed
+                                # "selection": field_attrs.get("selection"), # Uncomment if needed
                             }
                         )
 
@@ -78,7 +126,7 @@ class AkmPermissionsController(http.Controller):
                 )
 
             except Exception as e:
-                _logger.error(f"Error fetching fields for model '{model}': {e}")
+
                 return APIResponse.error(
                     message="Error fetching model fields",
                     error_code="FIELD_FETCH_ERROR",
