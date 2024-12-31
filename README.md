@@ -1,4 +1,4 @@
-# Alkhwarizmi Custom OAuth
+# OAuth
 
 A custom OAuth2-like implementation for Odoo that allows secure API access management.
 
@@ -11,7 +11,7 @@ A custom OAuth2-like implementation for Odoo that allows secure API access manag
 - Secure credential handling
 - Standard Request & response schema
 
-## Models
+## Required Models
 
 ### AkmOAuthClient
 
@@ -96,7 +96,7 @@ Location: https://myapp.com/callback?code=temp_auth_code
 
 ```bash
 
-POST /oauth/token
+POST {{HOST}}/{{MODULE}}/v1/token
 {
     "grant_type": "authorization_code",
     "code": "temp_auth_code",
@@ -129,7 +129,6 @@ POST /oauth/token
 
 ## Authentication Flow
 
-- HTTPS-only redirect URIs
 - One-time authorization codes
 - Token expiration
 - Scope-based access control
@@ -137,7 +136,7 @@ POST /oauth/token
 - Credential hashing
 
 
-## Setup
+# Setup
 
 1. Clone the repository:
 ```
@@ -156,22 +155,22 @@ cp -r AKM-odoo-access-management /path/to/odoo/addons/
 ./odoo-bin -i AKM-odoo-access-management
 ```
 
-# Inspecting models & Reading the Records
+# Get Permissions & Reading the Records
 
 Below are new endpoints to inspect accessible models and read data.
 Check which models a client can access.
 
-## Inspecting
+## Get Permissions
 
 ### Endpoint
 
 ```bash
-GET {{HOST}}/{{MODULE}}/v1/inspect-accessible-models
+GET {{HOST}}/{{MODULE}}/v1/permissions
 ```
 
 Example Request
 ```bash
-curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/inspect-accessible-models" \
+curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/permissions" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
@@ -185,7 +184,7 @@ Example Response
     "status_code": 200,
     "message": "Operation successful",
     "data": {
-      "accessible_models": [
+      [
         {
           "model_name": "res.partner",
           "model_description": "Contact",
@@ -198,8 +197,7 @@ Example Response
               "string": "Name"
             },
             ...
-          ]
-        },
+        }
         ...
       ]
     }
@@ -289,4 +287,4 @@ curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/records" \
 ```
 
 ## License
-LGPL-3.0
+<!-- Point to LICENSE -->
