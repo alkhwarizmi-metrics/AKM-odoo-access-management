@@ -48,7 +48,7 @@ cp -r AKM-odoo-access-management /path/to/odoo/addons/
 pip install -r requirements.txt
 
 # Install the module
-./odoo-bin -i alkhwarizmi_metrics_api
+./odoo-bin -i AKM-odoo-access-management
 ```
 
 
@@ -129,7 +129,7 @@ GET {{HOST}}/{{MODULE}}/v1/permissions
 
 #### Example Request
 ```bash
-curl -X GET "https://example.com/alkhwarizmi_metrics_api/v1/permissions" \
+curl -X GET "https://example.com/AKM-odoo-access-management/v1/permissions" \
      -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
