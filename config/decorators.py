@@ -120,8 +120,10 @@ def log_request_decorator(func: Callable) -> Callable:
     """
     Decorator to log API request details, including duration, status code, and other metadata.
 
-    **Important:** This decorator should be the first decorator applied to controller methods to ensure
-    that it captures both authenticated and unauthenticated requests.
+    Note: Use this decorator **before** `@require_authenticated_client`, to catch all requests, if
+    you are not interested in logging unauthenticated requests then place it after
+    `@require_authenticated_client`
+
 
     Args:
         func (Callable): The controller method to be decorated.
@@ -134,8 +136,22 @@ def log_request_decorator(func: Callable) -> Callable:
     def wrapper(*args, **kwargs):
         start_time = time.time()
         status_code = 200
+        client_id = None
 
         try:
+            # Attempt to extract client ID from Authorization header
+            # This is useful for logging requests without requiring authentication
+            # (e.g., for public endpoints)
+            auth_header = request.httprequest.headers.get("Authorization")
+            if auth_header and auth_header.startswith("Bearer "):
+                token = auth_header.split("Bearer ")[1]
+                try:
+                    token_record = TokenManager.get_token_record(token, request.env)
+                    if token_record:
+                        client_id = token_record.client_id.id
+                except Exception:
+                    pass  # Silently handle token lookup failures
+
             response = func(*args, **kwargs)
             if isinstance(response, dict) and "status_code" in response:
                 status_code = response.get("status_code", 200)
@@ -148,20 +164,13 @@ def log_request_decorator(func: Callable) -> Callable:
         finally:
             end_time = time.time()
             duration = end_time - start_time
-            endpoint = request.httprequest.path
-            method = request.httprequest.method
-            params = kwargs or request.jsonrequest or {}
-            client = kwargs.get("client")
-            client_id = client.id if client else None
-
             env = request.env
-            serializable_params = make_serializable(params)
             values = {
-                "endpoint": endpoint,
-                "method": method,
-                "request_params": json.dumps(serializable_params),
+                "endpoint": request.httprequest.path,
+                "method": request.httprequest.method,
+                "request_params": json.dumps(make_serializable(kwargs or {})),
                 "status_code": status_code,
-                "client_id": client_id,
+                "client_id": client_id or kwargs.get("client", {}).get("id"),
                 "ip_address": request.httprequest.remote_addr,
                 "user_agent": request.httprequest.user_agent.string,
                 "duration": duration,
