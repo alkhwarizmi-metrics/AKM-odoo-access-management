@@ -116,7 +116,7 @@ def require_authenticated_client(func: Callable) -> Callable:
     return wrapper
 
 
-def log_request_decorator(func: Callable) -> Callable:
+def log_request(func: Callable) -> Callable:
     """
     Decorator to log API request details, including duration, status code, and other metadata.
 

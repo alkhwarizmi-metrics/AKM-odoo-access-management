@@ -2,7 +2,7 @@ from odoo import http
 from odoo.http import request
 from ..config.response import APIResponse
 from ..config.constants import API_PREFIX
-from ..config.decorators import require_authenticated_client, log_request_decorator
+from ..config.decorators import require_authenticated_client, log_request
 
 
 class AkmPermissionsController(http.Controller):
@@ -27,7 +27,7 @@ class AkmPermissionsController(http.Controller):
         methods=["GET"],
         csrf=False,
     )
-    @log_request_decorator
+    @log_request
     @require_authenticated_client
     def get_permissions(self, **kwargs):
         """
@@ -112,8 +112,8 @@ class AkmPermissionsController(http.Controller):
                                 "required": field_attrs.get("required", False),
                                 "readonly": field_attrs.get("readonly", False),
                                 "string": field_attrs.get("string"),
-                                # "relation": field_attrs.get("relation"), # Uncomment if needed
-                                # "selection": field_attrs.get("selection"), # Uncomment if needed
+                                "relation": field_attrs.get("relation"),
+                                "selection": field_attrs.get("selection"),
                             }
                         )
 

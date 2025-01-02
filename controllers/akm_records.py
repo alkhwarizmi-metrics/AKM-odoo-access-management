@@ -10,7 +10,7 @@ from typing import List, Dict, Optional, Any, Tuple, Literal
 from ..config.response import APIResponse
 from ..config.pagination import Pagination
 from ..config.constants import API_PREFIX
-from ..config.decorators import require_authenticated_client, log_request_decorator
+from ..config.decorators import require_authenticated_client, log_request
 
 
 DomainOperator = Literal["=", ">=", "<="]
@@ -25,7 +25,7 @@ class AkmRecordsController(http.Controller):
     @http.route(
         f"{API_PREFIX}/records", type="json", auth="none", methods=["GET"], csrf=False
     )
-    @log_request_decorator
+    @log_request
     @require_authenticated_client
     def get(self, **kwargs: Dict[str, Any]) -> JsonDict:
         """Read records from a given model with pagination and filters."""
