@@ -1,25 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Odoo Version 18.0 -->
+<!-- Odoo Version 17.0 -->
 <odoo>
     <data>
-        <!-- List View Definition for AKM Auth Clients-->
+        <!-- List View Definition -->
         <record id="akm_oauth_client_list" model="ir.ui.view">
-            <field name="name">akm.oauth.client.list</field>
+            <field name="name">akm.oauth.client.tree</field>
             <field name="model">akm.oauth.client</field>
             <field name="arch" type="xml">
-                <list string="AKM Oauth Client">
+                <tree string="AKM Oauth Client">
                     <field name="name"/>
-                    <field name="client_id" string="Client ID"/>
-                    <!-- client_secret intentionally not shown here -->
-                    <field name="redirect_uri" string="Redirect (Callback) URI"/>
+                    <field name="client_id"/>
+                    <field name="redirect_uri"/>
                     <field name="scope" widget="badge" 
                         decoration-info="scope == 'read'" 
                         decoration-warning="scope == 'write'" 
-                        decoration-danger="scope == 'admin'" 
-                        />
-                    
+                        decoration-danger="scope == 'admin'"/>
                     <field name="is_active" widget="boolean_toggle"/>
-                </list>
+                </tree>
             </field>
         </record>
 
@@ -54,10 +51,10 @@
                            <!-- Updated page to handle model & field permissions -->
                             <page string="Permissions" name="permissions">
                                 <field name="permission_ids" widget="one2many_list">
-                                    <list>
+                                    <tree>
                                         <field name="model_id" string="Model"/>
                                         <field name="field_ids" widget="many2many_tags" string="Allowed Fields"/>
-                                    </list>
+                                    </tree>
                                     <form>
                                         <sheet>
                                             <group>
@@ -72,12 +69,12 @@
                             <!-- Readonly Nested Page (Tab) for viewing authorization codes -->
                             <page name="auth_codes" string="Authorization Codes">
                                 <field name="authcode_ids" readonly="1" widget="one2many_list">
-                                    <list create="false" edit="false" delete="false">
+                                    <tree create="false" edit="false" delete="false">
                                         <field name="code"/>
                                         <field name="user_name"/>
                                         <field name="expires_at"/>
                                         <field name="used"/>
-                                    </list>
+                                    </tree>
                                     <form>
                                         <sheet>
                                             <group>
@@ -94,7 +91,7 @@
                             <!-- Readonly Nested Page (Tab) for viewing tokens -->
                             <page name="tokens" string="Tokens">
                                 <field name="token_ids" readonly="1" widget="one2many_list">
-                                    <list create="false" edit="false" delete="false">
+                                    <tree create="false" edit="false" delete="false">
                                         <field name="user_name"/>
                                         <field name="access_token"/>
                                         <field name="refresh_token"/>
@@ -106,7 +103,7 @@
                                                 decoration-danger="scope == 'admin'" 
                                                 />
                                         <field name="is_refresh_token_valid" widget="boolean_toggle"/>
-                                    </list>
+                                    </tree>
                                     <form>
                                         <sheet>
                                             <group>
@@ -131,13 +128,13 @@
                             <!-- Readonly Nested Page (Tab) for viewing request Logs -->
                             <page name="request_logs" string="Request Logs">
                                 <field name="request_log_ids" readonly="1" widget="one2many_list">
-                                    <list create="false" edit="false" delete="false">
+                                    <tree create="false" edit="false" delete="false">
                                         <field name="name"/>
                                         <field name="method"/>
                                         <field name="status_code"/>
                                         <field name="duration"/>
                                         <field name="create_date"/>
-                                    </list>
+                                    </tree>
                                     <form>
                                         <sheet>
                                             <group>
@@ -166,7 +163,7 @@
         <record id="akm_oauth_client_action" model="ir.actions.act_window">
             <field name="name">AKM OAuth Clients</field>
             <field name="res_model">akm.oauth.client</field>
-            <field name="view_mode">list,form</field>
+            <field name="view_mode">tree,form</field>
         </record>
 
         <!-- Menu -->
