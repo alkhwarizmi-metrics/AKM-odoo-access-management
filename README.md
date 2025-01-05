@@ -31,7 +31,7 @@ A custom OAuth2-like implementation for Odoo that allows secure API access manag
 - Easy integration
 
 ## Requirements
-- Odoo 16 or later
+- Odoo Version 16.0
 - (Rest configure python and postgres according to Odoo requirements, and no sepcific installations required for this addon)
 
 ## Installation
