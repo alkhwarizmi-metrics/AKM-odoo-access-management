@@ -1,8 +1,8 @@
-# addons/{MODULE_NAME}/controllers/akm_oauth2_controllers.py
+# addons/{MODULE_NAME}/controllers/akm_oauth2.py
 from odoo import http
 from odoo.http import request
 from ..config.response import APIResponse
-from ..config.constants import ACCESS_TOKEN_EXPIRY, API_PREFIX
+from ..config.constants import ACCESS_TOKEN_EXPIRY, API_PREFIX, MODULE_NAME
 from ..config.utils import validate_http4_url
 import secrets
 
@@ -151,7 +151,7 @@ class AkmOAuth2Controller(http.Controller):
 
         # Render consent screen template
         return request.render(
-            "alkhwarizmi_metrics_api.akm_oauth_consent_form",
+            f"{MODULE_NAME}.akm_oauth_consent_form",
             {
                 "client": client,
                 "scope": scope,
