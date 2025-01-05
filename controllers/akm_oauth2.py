@@ -1,4 +1,4 @@
-# addons/{MODULE_NAME}/controllers/akm_oauth2_controllers.py
+# addons/{MODULE_NAME}/controllers/akm_oauth2.py
 from odoo import http
 from odoo.http import request
 from ..config.response import APIResponse

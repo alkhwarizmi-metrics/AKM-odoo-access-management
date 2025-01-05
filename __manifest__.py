@@ -1,6 +1,6 @@
 {
     "name": "OAuth2.0 API Access Management",
-    "version": "18.0.1.0.0",
+    "version": "17.0.1.0.0",
     "summary": "OAuth2.0 API for accessing Odoo data",
     "description": """
         OAuth2.0 API Access Management for Odoo
