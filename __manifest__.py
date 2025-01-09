@@ -23,7 +23,7 @@
         * Request validation
     """,
     "author": "Alkhwarizmi Metrics",
-    "website": "https://github.com/alkhwarizmi-metrics",
+    "website": "https://github.com/alkhwarizmi-metrics/AKM-odoo-access-management",
     "category": "Technical/API",
     "depends": ["base"],
     "data": [
@@ -32,10 +32,10 @@
         "views/akm_oauth_consent_template.xml",
         "views/akm_request_log.xml",
     ],
-    # "images": [
-    #     "static/description/banner.png",
-    #     "static/description/icon.png",
-    # ],
+    "images": [
+        "static/description/banner.png",
+        "static/description/icon.png",
+    ],
     "installable": True,
     "application": True,
     "license": "LGPL-3",
